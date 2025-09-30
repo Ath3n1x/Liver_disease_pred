@@ -9,17 +9,30 @@ from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_m
 
 # Column mapping for messy dataset headers
 col_map = {
-    "ï»¿Age of the patient": "age",
-    "Gender of the patient": "gender",
-    "Total Bilirubin": "total_bilirubin",
-    "Direct Bilirubin": "direct_bilirubin",
-    "Â Alkphos Alkaline Phosphotase": "alkphos",
-    "Â Sgpt Alamine Aminotransferase": "sgpt",
-    "Sgot Aspartate Aminotransferase": "sgot",
-    "Total Protiens": "total_proteins",
-    "Â ALB Albumin": "albumin",
-    "A/G Ratio Albumin and Globulin Ratio": "ag_ratio",
-    "Result": "dataset"
+    "ï»¿age of the patient": "age",
+    "gender of the patient": "gender",
+    "total bilirubin": "total_bilirubin",
+    "direct bilirubin": "direct_bilirubin",
+    "â alkphos alkaline phosphotase": "alkphos",
+    "â sgpt alamine aminotransferase": "sgpt",
+    "sgot aspartate aminotransferase": "sgot",
+    "total protiens": "total_proteins",
+    "â alb albumin": "albumin",
+    "a/g ratio albumin and globulin ratio": "ag_ratio",
+    "result": "dataset",
+
+    # Handle capitalized versions
+    "age of the patient": "age",
+    "gender of the patient": "gender",
+    "total bilirubin": "total_bilirubin",
+    "direct bilirubin": "direct_bilirubin",
+    "alkphos alkaline phosphotase": "alkphos",
+    "sgpt alamine aminotransferase": "sgpt",
+    "sgot aspartate aminotransferase": "sgot",
+    "total protiens": "total_proteins",
+    "alb albumin": "albumin",
+    "a/g ratio albumin and globulin ratio": "ag_ratio",
+    "result": "dataset"
 }
 
 # ================================
@@ -29,13 +42,13 @@ col_map = {
 def train_model():
     # Load training dataset with encoding fix
     df_train = pd.read_csv(
-        "liver_patient_data/Liver Patient Dataset (LPD)_train.csv",
+        "liver_patient_data/train.csv",
         encoding="latin1"
     )
 
-    # Apply column mapping + normalize names
+    # Apply column mapping
+    df_train = df_train.rename(columns=lambda x: x.strip().lower())
     df_train = df_train.rename(columns=col_map)
-    df_train.columns = df_train.columns.str.strip().str.lower()
 
     st.write("Cleaned train columns:", df_train.columns.tolist())
 
@@ -113,13 +126,13 @@ elif page == "Model Performance":
 
     try:
         df_test = pd.read_csv(
-            "liver_patient_data/Liver Patient Dataset (LPD)_test.csv",
+            "liver_patient_data/test.csv",
             encoding="latin1"
         )
 
-        # Apply column mapping + normalize names
+        # Apply column mapping
+        df_test = df_test.rename(columns=lambda x: x.strip().lower())
         df_test = df_test.rename(columns=col_map)
-        df_test.columns = df_test.columns.str.strip().str.lower()
 
         st.write("Cleaned test columns:", df_test.columns.tolist())
 
