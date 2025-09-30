@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
@@ -11,10 +10,9 @@ from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_m
 # ================================
 # Train the model at app startup
 # ================================
-
 @st.cache_resource
 def train_model():
-    # Load training dataset
+    # Load training dataset (CSV version)
     df_train = pd.read_csv("liver_patient_data/Liver Patient Dataset (LPD)_train.csv")
 
     # Encode Gender
@@ -36,14 +34,13 @@ def train_model():
     )
     model.fit(X_imputed, y)
 
-    return model, imputer, df_train, X, y
+    return model, imputer
 
-model, imputer, df_train, X_train_full, y_train_full = train_model()
+model, imputer = train_model()
 
 # ================================
 # Streamlit UI
 # ================================
-
 st.title("🧪 Liver Disease Prediction Demo")
 st.write("This app retrains the model on Kaggle liver dataset and allows predictions.")
 
