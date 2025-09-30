@@ -7,6 +7,21 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_matrix, classification_report
 
+# Column mapping for messy dataset headers
+col_map = {
+    "ï»¿age of the patient": "age",
+    "gender of the patient": "gender",
+    "total bilirubin": "total_bilirubin",
+    "direct bilirubin": "direct_bilirubin",
+    "â alkphos alkaline phosphotase": "alkphos",
+    "â sgpt alamine aminotransferase": "sgpt",
+    "sgot aspartate aminotransferase": "sgot",
+    "total protiens": "total_proteins",
+    "â alb albumin": "albumin",
+    "a/g ratio albumin and globulin ratio": "ag_ratio",
+    "result": "dataset"
+}
+
 # ================================
 # Train the model at app startup
 # ================================
@@ -18,25 +33,14 @@ def train_model():
         encoding="latin1"
     )
 
-    # Normalize column names (lowercase, no spaces)
-    df_train.columns = df_train.columns.str.strip().str.lower()
+    # Apply column mapping
+    df_train = df_train.rename(columns=col_map)
 
-    # Debug: Show columns
-    st.write("Columns in train dataset:", df_train.columns.tolist())
+    st.write("Cleaned train columns:", df_train.columns.tolist())
 
     # Encode gender
-    if "gender" in df_train.columns:
-        df_train["gender"] = LabelEncoder().fit_transform(df_train["gender"])
-    else:
-        st.error("❌ Could not find 'gender' column in training data.")
-        st.stop()
-
-    # Create target variable
-    if "dataset" in df_train.columns:
-        df_train["target"] = (df_train["dataset"] == 1).astype(int)
-    else:
-        st.error("❌ Could not find 'dataset' column in training data.")
-        st.stop()
+    df_train["gender"] = LabelEncoder().fit_transform(df_train["gender"])
+    df_train["target"] = (df_train["dataset"] == 1).astype(int)
 
     X = df_train.drop(columns=["dataset", "target"])
     y = df_train["target"]
@@ -112,22 +116,14 @@ elif page == "Model Performance":
             encoding="latin1"
         )
 
-        # Normalize columns
-        df_test.columns = df_test.columns.str.strip().str.lower()
+        # Apply column mapping
+        df_test = df_test.rename(columns=col_map)
+
+        st.write("Cleaned test columns:", df_test.columns.tolist())
 
         # Encode gender
-        if "gender" in df_test.columns:
-            df_test["gender"] = LabelEncoder().fit_transform(df_test["gender"])
-        else:
-            st.error("❌ Could not find 'gender' column in test data.")
-            st.stop()
-
-        # Create target
-        if "dataset" in df_test.columns:
-            df_test["target"] = (df_test["dataset"] == 1).astype(int)
-        else:
-            st.error("❌ Could not find 'dataset' column in test data.")
-            st.stop()
+        df_test["gender"] = LabelEncoder().fit_transform(df_test["gender"])
+        df_test["target"] = (df_test["dataset"] == 1).astype(int)
 
         X_test = df_test.drop(columns=["dataset", "target"])
         y_test = df_test["target"]
