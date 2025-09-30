@@ -12,18 +12,37 @@ from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_m
 # ================================
 @st.cache_resource
 def train_model():
-    # Load training dataset (CSV version)
-    df_train = pd.read_csv("liver_patient_data/Liver Patient Dataset (LPD)_train.csv")
+    # Load training dataset with encoding fix
+    df_train = pd.read_csv(
+        "liver_patient_data/Liver Patient Dataset (LPD)_train.csv",
+        encoding="latin1"
+    )
 
-    # Encode Gender
-    df_train['Gender'] = LabelEncoder().fit_transform(df_train['Gender'])
-    df_train['Target'] = (df_train['Dataset'] == 1).astype(int)
+    # Normalize column names (lowercase, no spaces)
+    df_train.columns = df_train.columns.str.strip().str.lower()
 
-    X = df_train.drop(columns=['Dataset', 'Target'])
-    y = df_train['Target']
+    # Debug: Show columns
+    st.write("Columns in train dataset:", df_train.columns.tolist())
+
+    # Encode gender
+    if "gender" in df_train.columns:
+        df_train["gender"] = LabelEncoder().fit_transform(df_train["gender"])
+    else:
+        st.error("❌ Could not find 'gender' column in training data.")
+        st.stop()
+
+    # Create target variable
+    if "dataset" in df_train.columns:
+        df_train["target"] = (df_train["dataset"] == 1).astype(int)
+    else:
+        st.error("❌ Could not find 'dataset' column in training data.")
+        st.stop()
+
+    X = df_train.drop(columns=["dataset", "target"])
+    y = df_train["target"]
 
     # Impute missing values
-    imputer = SimpleImputer(strategy='median')
+    imputer = SimpleImputer(strategy="median")
     X_imputed = imputer.fit_transform(X)
 
     # Train RandomForest
@@ -35,6 +54,7 @@ def train_model():
     model.fit(X_imputed, y)
 
     return model, imputer
+
 
 model, imputer = train_model()
 
@@ -87,14 +107,30 @@ elif page == "Model Performance":
     st.header("Model Evaluation on Test Dataset")
 
     try:
-        df_test = pd.read_csv("liver_patient_data/test.csv")
+        df_test = pd.read_csv(
+            "liver_patient_data/test.csv",
+            encoding="latin1"
+        )
 
-        # Encode Gender
-        df_test['Gender'] = LabelEncoder().fit_transform(df_test['Gender'])
-        df_test['Target'] = (df_test['Dataset'] == 1).astype(int)
+        # Normalize columns
+        df_test.columns = df_test.columns.str.strip().str.lower()
 
-        X_test = df_test.drop(columns=['Dataset', 'Target'])
-        y_test = df_test['Target']
+        # Encode gender
+        if "gender" in df_test.columns:
+            df_test["gender"] = LabelEncoder().fit_transform(df_test["gender"])
+        else:
+            st.error("❌ Could not find 'gender' column in test data.")
+            st.stop()
+
+        # Create target
+        if "dataset" in df_test.columns:
+            df_test["target"] = (df_test["dataset"] == 1).astype(int)
+        else:
+            st.error("❌ Could not find 'dataset' column in test data.")
+            st.stop()
+
+        X_test = df_test.drop(columns=["dataset", "target"])
+        y_test = df_test["target"]
 
         # Impute missing values
         X_test_imputed = imputer.transform(X_test)
